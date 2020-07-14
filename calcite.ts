@@ -36,6 +36,6 @@ export async function loadPlugin(name: string, url: string) {
 export function importFromPlugin(name: string) {
     let opId = DenoCore.ops()[name]
     return function (...args: ArrayBufferView[]) {
-        DenoCore.dispatch(opId, ...args)
+        return DenoCore.dispatch(opId, ...args)
     }
 }
