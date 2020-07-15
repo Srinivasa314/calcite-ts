@@ -1,7 +1,9 @@
+import { encode } from "https://denopkg.com/Srinivasa314/msgpack-deno/mod.ts";
+
 // @ts-ignore
 const DenoCore = Deno.core as {
     ops: () => { [key: string]: number };
-    setAsyncHandler(rid: number, handler: Function): void;
+    setAsyncHandler(rid: number, handler: (_: Uint8Array) => void): void;
     dispatch(
         rid: number,
         ...buf: ArrayBufferView[]
@@ -35,7 +37,7 @@ export async function loadPlugin(name: string, url: string) {
 
 export function importFromPlugin(name: string) {
     let opId = DenoCore.ops()[name]
-    return function (...args: ArrayBufferView[]) {
-        return DenoCore.dispatch(opId, ...args)
+    return function (...args: any[]) {
+        return DenoCore.dispatch(opId, ...(args.map(arg => encode(arg))))
     }
 }
