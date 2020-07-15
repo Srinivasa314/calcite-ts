@@ -38,6 +38,6 @@ export async function loadPlugin(name: string, url: string) {
 export function importFromPlugin(name: string) {
     let opId = DenoCore.ops()[name]
     return function (...args: any[]) {
-        return decode(DenoCore.dispatch(opId, ...(args.map(arg => encode(arg)))))
+        return decode(DenoCore.dispatch(opId, ...(args.map(arg => encode(arg))))!)
     }
 }
