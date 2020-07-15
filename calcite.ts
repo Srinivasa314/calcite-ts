@@ -1,4 +1,4 @@
-import { encode } from "https://denopkg.com/Srinivasa314/msgpack-deno/mod.ts";
+import { encode, decode } from "https://denopkg.com/Srinivasa314/msgpack-deno/mod.ts";
 
 // @ts-ignore
 const DenoCore = Deno.core as {
@@ -38,6 +38,6 @@ export async function loadPlugin(name: string, url: string) {
 export function importFromPlugin(name: string) {
     let opId = DenoCore.ops()[name]
     return function (...args: any[]) {
-        return DenoCore.dispatch(opId, ...(args.map(arg => encode(arg))))
+        return decode(DenoCore.dispatch(opId, ...(args.map(arg => encode(arg)))))
     }
 }
