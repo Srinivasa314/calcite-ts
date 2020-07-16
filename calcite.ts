@@ -1,4 +1,4 @@
-import { encode, decode } from "https://denopkg.com/Srinivasa314/msgpack-deno/mod.ts";
+import { encode, decode } from "https://deno.land/x/msgpack/mod.ts";
 
 // @ts-ignore
 const DenoCore = Deno.core as {
@@ -38,6 +38,32 @@ export async function loadPlugin(name: string, url: string) {
 export function importFromPlugin(name: string) {
     let opId = DenoCore.ops()[name]
     return function (...args: any[]) {
-        return decode(DenoCore.dispatch(opId, ...(args.map(arg => arg.buffer?arg:encode(arg))))!)
+        return decode(DenoCore.dispatch(opId, ...(args.map(arg => arg.buffer ? arg : encode(arg))))!)
+    }
+}
+
+interface AsyncResponse {
+    commandId: number,
+    result?: any,
+    error?: any
+}
+
+export function importAsyncFromPlugin(name: string) {
+    let opId = DenoCore.ops()[name]
+    let pendingCommands: [Function, Function][] = [];
+    DenoCore.setAsyncHandler(opId, (bytes) => {
+        let response = decode(bytes) as AsyncResponse;
+        if (typeof response.result != "undefined") {
+            pendingCommands[response.commandId][0](response.result)
+        }
+        else {
+            pendingCommands[response.commandId][1](response.error)
+        }
+    })
+    return function (...args: any[]) {
+        return new Promise((resolve, reject) => {
+            DenoCore.dispatch(opId, encode(pendingCommands.length), ...args.map(arg => encode(arg)))
+            pendingCommands.push([resolve, reject])
+        })
     }
 }
