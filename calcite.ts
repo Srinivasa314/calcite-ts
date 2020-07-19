@@ -35,17 +35,16 @@ export async function loadPlugin(name: string, url: string) {
     });
 }
 
-export function importFromPlugin(name: string) {
+export function importFromPlugin(name: string, options: { returnRawBuffer: boolean } = { returnRawBuffer: false }) {
     let opId = DenoCore.ops()[name];
     return function (...args: any[]) {
-        return decode(
-            DenoCore.dispatch(
-                opId,
-                ...(args.map((arg) =>
-                    arg.buffer ? arg : encode(arg)
-                )),
-            )!,
-        );
+        let res = DenoCore.dispatch(
+            opId,
+            ...(args.map((arg) =>
+                arg.buffer ? arg : encode(arg)
+            )),
+        )!;
+        return options.returnRawBuffer ? res : decode(res)
     };
 }
 
