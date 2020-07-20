@@ -43,7 +43,7 @@ export function importFromPlugin(
   return function (...args: any[]) {
     let res = DenoCore.dispatch(
       opId,
-      ...(args.map((arg) => arg.buffer ? arg : encode(arg))),
+      ...(args.map((arg) => arg != null && arg.buffer ? arg : encode(arg))),
     )!;
     return options.returnRawBuffer ? res : decode(res);
   };
