@@ -1,4 +1,4 @@
-import { encode, decode } from "https://deno.land/x/msgpack/mod.ts";
+import { encode, decode } from "https://deno.land/x/msgpack@1.0/mod.ts";
 
 // @ts-ignore
 const DenoCore = Deno.core as {
