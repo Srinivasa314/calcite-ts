@@ -52,7 +52,7 @@ export function importFromPlugin(
 
 interface AsyncResponse {
   commandId: number;
-  result: { 0: any } | { 1: any }
+  result: { Ok: any } | { Err: any }
 }
 
 export function importAsyncFromPlugin(name: string) {
@@ -61,10 +61,10 @@ export function importAsyncFromPlugin(name: string) {
 
   DenoCore.setAsyncHandler(opId, (bytes) => {
     let response = JSON.parse(decoder.decode(bytes)) as AsyncResponse;
-    if ('0' in response.result) {
-      pendingCommands[response.commandId][0](response.result["0"]);
+    if ('Ok' in response.result) {
+      pendingCommands[response.commandId][0](response.result.Ok);
     } else {
-      pendingCommands[response.commandId][1](response.result["1"]);
+      pendingCommands[response.commandId][1](response.result.Err);
     }
   });
 
