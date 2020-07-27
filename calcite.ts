@@ -1,4 +1,5 @@
-import { encode, decode } from "https://deno.land/x/msgpack@1.0/mod.ts";
+const encoder = new TextEncoder()
+const decoder = new TextDecoder()
 
 // @ts-ignore
 const DenoCore = Deno.core as {
@@ -43,15 +44,15 @@ export function importFromPlugin(
   return function (...args: any[]) {
     let res = DenoCore.dispatch(
       opId,
-      ...(args.map((arg) => arg != null && arg.buffer ? arg : encode(arg))),
+      ...(args.map((arg) => arg != null && arg.buffer ? arg : encoder.encode(JSON.stringify(arg)))),
     )!;
-    return options.returnRawBuffer ? res : decode(res);
+    return options.returnRawBuffer ? res : JSON.parse(decoder.decode(res));
   };
 }
 
 interface AsyncResponse {
   commandId: number;
-  result: { 0?: any; 1?: any };
+  result: { 0: any } | { 1: any }
 }
 
 export function importAsyncFromPlugin(name: string) {
@@ -59,8 +60,8 @@ export function importAsyncFromPlugin(name: string) {
   let pendingCommands: [Function, Function][] = [];
 
   DenoCore.setAsyncHandler(opId, (bytes) => {
-    let response = decode(bytes) as AsyncResponse;
-    if (typeof response.result["0"] != "undefined") {
+    let response = JSON.parse(decoder.decode(bytes)) as AsyncResponse;
+    if ('0' in response.result) {
       pendingCommands[response.commandId][0](response.result["0"]);
     } else {
       pendingCommands[response.commandId][1](response.result["1"]);
@@ -71,8 +72,8 @@ export function importAsyncFromPlugin(name: string) {
     return new Promise((resolve, reject) => {
       DenoCore.dispatch(
         opId,
-        encode(pendingCommands.length),
-        ...args.map((arg) => encode(arg)),
+        encoder.encode(JSON.stringify(pendingCommands.length)),
+        ...args.map((arg) => encoder.encode(JSON.stringify(arg))),
       );
       pendingCommands.push([resolve, reject]);
     });
