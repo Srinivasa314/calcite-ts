@@ -23,7 +23,7 @@ if (Deno.build.os === "darwin") {
   filenameSuffix = ".dylib";
 }
 
-import { prepare } from "https://deno.land/x/plugin_prepare@v0.7.4/mod.ts";
+import { prepare } from "https://deno.land/x/plugin_prepare@v0.7.5/mod.ts";
 
 export async function loadPlugin(name: string, url: string) {
   return await prepare({
